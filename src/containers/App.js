@@ -4,42 +4,55 @@ import SearchBox from '../components/SearchBox';
 import Scroll from '../components/Scroll';
 import './App.css';
 
+import {
+  setSearchField,
+  fetchRobots
+} from '../actions'
+
+import { connect } from 'react-redux';
+
+const mapStateToProps = state => ({
+  searchField: state.searchField.searchField,
+  isPedding: state.robotsFetch.isPedding,
+  robots: state.robotsFetch.robots,
+  error: state.robotsFetch.error
+})
+
+const mapDispatchToProps = dispatch => ({
+  onSearchChange: event => dispatch(setSearchField(event.target.value)),
+  onFetchRobots: () => dispatch(fetchRobots()),
+})
+
 class App extends Component {
-  constructor() {
-    super()
-    this.state = {
-      robots: [],
-      searchfield: ''
-    }
-  }
 
   componentDidMount() {
-    fetch('https://jsonplaceholder.typicode.com/users')
-      .then(response=> response.json())
-      .then(users => {this.setState({ robots: users})});
+    this.props.onFetchRobots();
   }
 
-  onSearchChange = (event) => {
-    this.setState({ searchfield: event.target.value })
-  }
 
   render() {
-    const { robots, searchfield } = this.state;
+    const {
+      searchField, onSearchChange,
+      robots, isPedding, error
+    } = this.props;
     const filteredRobots = robots.filter(robot =>{
-      return robot.name.toLowerCase().includes(searchfield.toLowerCase());
+      return robot.name.toLowerCase().includes(searchField.toLowerCase());
     })
-    return !robots.length ?
+    return isPedding ?
       <h1>Loading</h1> :
       (
         <div className='tc'>
           <h1 className='f1'>RoboFriends</h1>
-          <SearchBox searchChange={this.onSearchChange}/>
+          <SearchBox searchChange={onSearchChange}/>
           <Scroll>
-            <CardList robots={filteredRobots} />
+            {error
+              ? <h1>Error</h1>
+              : <CardList robots={filteredRobots}/>
+            }
           </Scroll>
         </div>
       );
   }
 }
 
-export default App;
+export default connect(mapStateToProps, mapDispatchToProps)(App);
