@@ -1,17 +1,25 @@
-import React from 'react';
+import React, { useState, useEffect, memo } from 'react';
 import Card from './Card';
 
-const CardList = ({ robots }) => {
+const CardList = ({ robots, searchField }) => {
+  const [ filteredRobots, setFilteredRobots ] = useState(robots);
+  useEffect(() => {
+    const filtered = robots.filter(robot =>{
+      return robot.name.toLowerCase().includes(searchField.toLowerCase());
+    });
+    setFilteredRobots(filtered)
+  }, [searchField, robots]);
+
   return (
     <div>
       {
-        robots.map((user, i) => {
+        filteredRobots.map((user, i) => {
           return (
             <Card
               key={i}
-              id={robots[i].id}
-              name={robots[i].name}
-              email={robots[i].email}
+              id={user.id}
+              name={user.name}
+              email={user.email}
               />
           );
         })
@@ -20,4 +28,4 @@ const CardList = ({ robots }) => {
   );
 }
 
-export default CardList;
+export default memo(CardList);
