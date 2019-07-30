@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useReducer, memo } from 'react';
+import React, { useEffect, useState, useReducer, useMemo } from 'react';
 import CardList from '../components/CardList';
 import SearchBox from '../components/SearchBox';
 import Scroll from '../components/Scroll';
@@ -11,7 +11,6 @@ import {
 } from "../constants";
 
 const robotsFetch = (state, action={}) => {
-  console.log(action.type);
   switch(action.type) {
     case ROBOTS_FETCH_PEDDING:
       return { ...state, isPedding: true };
@@ -35,7 +34,7 @@ const fetchRobots = async (dispatch) => {
   }
 }
 
-const Header = memo(() => <h1 className='f1'>RoboFriends</h1>)
+
 
 const App = () => {
   const [ searchField, setSearchField ] = useState('');
@@ -52,29 +51,28 @@ const App = () => {
     fetchRobots(dispatch);
   }, [])
 
-  // const filteredRobots = robots.filter(robot =>{
-  //   return robot.name.toLowerCase().includes(searchField.toLowerCase());
-  // })
+  const header = useMemo(() => <h1 className='f1'>RoboFriends</h1>, [])
+  const filteredRobots = useMemo(() => robots.filter(robot =>{
+    return robot.name.toLowerCase().includes(searchField.toLowerCase());
+  }), [robots, searchField])
+
+  const cardList = useMemo(() => <CardList robots={filteredRobots} />, [filteredRobots])
   
-  return isPedding ?
-    <h1>Loading</h1> :
-    (
-      <div className='tc'>
-        <Header />
-        <button onClick={() => setCount(c => c + 1)} >
-          {`Count: ${count}`}
-        </button>
-        <SearchBox
-          searchChange={ event => setSearchField(event.target.value)}
-        />
-        <Scroll>
-          {error
-            ? <h1>Error</h1>
-            : <CardList robots={robots} searchField={searchField} />
-          }
-        </Scroll>
-      </div>
-    );
+  return <div className='tc'>
+    { header }
+    <button onClick={() => setCount(c => c + 1)} >
+      {`Count: ${count}`}
+    </button>
+    <SearchBox
+      searchChange={ event => setSearchField(event.target.value)}
+    />
+    <Scroll>
+      {error
+        ? <h1>Error</h1>
+        : isPedding ? <h1>Loading</h1> : cardList
+      }
+    </Scroll>
+  </div>
 }
 
 export default App;
